@@ -8,16 +8,39 @@
 // just make sure your code is clear, concise and well documented.
 
 _start:
-	bl is_palindrome
-	mov r0, #65
-	bl is_not_palindrome
+	bl transform_input
+	
+	ldr r0, =input
+	bl print_string
+	ldr r0, =input_no_spaces
+	bl print_string
+	
+	mov r4, #0
+	
+	
 	b _exit
 
 	
-check_input:
-	// You could use this symbol to check for your input length
-	// you can assume that your input string is at least 2 characters 
-	// long and ends with a null byte
+transform_input: 
+	// deletes spaces from =input into =input_no_spaces
+	// =input_no_spaces string length returned in r0
+	mov r0, #0
+	ldr r1, =input
+	ldr r2, =input_no_spaces
+	
+	transform_loop:
+		ldrb r3, [r1], #1
+		cmp r3, #0
+		beq transformation_done
+		cmp r3, #' '
+		beq transform_loop  //if space, don't copy to buffer
+		
+		strb r3, [r2], #1 //copy char to buffer
+		add r0, r0, #1 // increase real length
+		b transform_loop
+	
+	transformation_done:
+		bx lr
 	
 	
 check_palindrome:
@@ -93,6 +116,7 @@ _exit:
 	// are not allowed to change the name 'input'!
 	test: .asciz "Test123"
 	input: .asciz "Grav ned den varg"
+	input_no_spaces: .zero 64
 	detected_message: .asciz "Palindrome detected\n"
 	not_detected_message: .asciz "Not a palindrome\n"
 .end
