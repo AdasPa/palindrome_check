@@ -9,13 +9,14 @@
 
 _start:
 	bl transform_input
+	mov r4, r0 // =input_no_spaces length stored in r4
 	
 	ldr r0, =input
 	bl print_string
 	ldr r0, =input_no_spaces
 	bl print_string
 	
-	mov r4, #0
+	mov r0, #0
 	
 	
 	b _exit
