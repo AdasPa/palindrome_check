@@ -28,8 +28,11 @@ is_palindrome:
 	push {lr}
 	
 	// Switch on only the 5 rightmost LEDs
-	// Write 'Palindrom detected' to UART
-	ldr r0, =detected_output
+	mov r0, #0x0000001f
+	bl write_led
+	
+	// Write 'Palindrome detected' to UART
+	ldr r0, =detected_message
 	bl print_string
 	
 	pop {lr}
@@ -37,14 +40,23 @@ is_palindrome:
 	
 is_not_palindrome:
 	push {lr}
-	// Switch on only the 5 leftmost LEDs
 	
-	// Write 'Not a palindrom' to UART
-	ldr r0, =not_detected_output
+	// Switch on only the 5 leftmost LEDs
+	mov r0, #0x000003e0
+	bl write_led
+	
+	// Write 'Not a palindrome' to UART
+	ldr r0, =not_detected_message
 	bl print_string
 	
 	pop {lr}
 	bx lr
+	
+write_led: // binary representation of r0 value to LEDs
+	ldr r1, =0xff200000    // LEDs address
+    str r0, [r1]     // write r0 to LEDs
+	bx lr
+	
 	
 print_string: // address of string in r0
 	push {r4, lr}
@@ -81,6 +93,6 @@ _exit:
 	// are not allowed to change the name 'input'!
 	test: .asciz "Test123"
 	input: .asciz "Grav ned den varg"
-	detected_output: .asciz "Palindrome detected\n"
-	not_detected_output: .asciz "Not a palindrome\n"
+	detected_message: .asciz "Palindrome detected\n"
+	not_detected_message: .asciz "Not a palindrome\n"
 .end
