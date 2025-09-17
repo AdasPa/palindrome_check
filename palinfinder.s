@@ -9,20 +9,26 @@
 
 _start:
 	bl transform_input
-	mov r4, r0 // =input_no_spaces length stored in r4
+	// r0 = =input_no_spaces length; =input turned into =input_no_spaces, lowercased, unspaced
+	bl check_palindrome 
+	// r0 == 0 -> not a palindrome; r0 == 1 -> is a palindrome
 	
-	bl check_palindrome
+	cmp r0, #1
+	beq palindrome_detected
 	
-	
-	ldr r0, =input
-	bl print_string
-	ldr r0, =input_no_spaces
-	bl print_string
-	
-	mov r0, #0
-	
+	cmp r0, #0
+	beq palindrome_not_detected
 	
 	b _exit
+	
+	
+	palindrome_detected:
+		bl is_palindrome
+		b _exit
+		
+	palindrome_not_detected:
+		bl is_not_palindrome
+		b _exit
 
 	
 transform_input: 
@@ -55,13 +61,41 @@ transform_input:
 		bx lr
 	
 	
-check_palindrome:
-	mov r1, r0 // string length into r1
+check_palindrome: 
+	// takes =input_no_spaces length in r0, 
+	// returns in r0 -> 0 if not a palindrome, 1 if a palindrome
+
+	push {r4 - r5}
+	ldr r5, =input_no_spaces
+	
+	mov r1, #0 // offset of first char
+	sub r2, r0 , #1 // string length-1 into r1 -> offset of lats char
 	mov r0, #1 // bollean, when returned -> 1 if palindrome detected, 0 if not
 	
-	check_palindrome_loop:
-		// ldrb r2, [r1, 1] ładuje do r2 znak spod r1[1], indeks od 0
 	
+	
+	check_palindrome_loop:
+		ldrb r3, [r5, r1]
+		add r1, r1, #1
+		
+		ldrb r4, [r5, r2]
+		sub r2, r2, #1
+		
+		cmp r3, r4
+		bne end_check_not_palindrome // returns 0 if chars differ
+		
+		cmp r1, r2
+		bgt check_done // ends after crossing middle of string
+		
+		b check_palindrome_loop
+		
+	end_check_not_palindrome:
+		mov r0, #0
+		b check_done
+	
+	check_done:
+		pop {r4 - r5}
+		bx lr
 	
 is_palindrome:
 	push {lr}
