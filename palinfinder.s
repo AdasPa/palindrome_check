@@ -1,11 +1,10 @@
-// palinfinder.s, provided with Lab1 in TDT4258 autumn 2025
+//
+// Author: Adam Pacek
+// email: adammp@stud.ntnu.no
+//
+
 .global _start
 
-
-// Please keep the _start method and the input strings name ("input") as
-// specified below
-// For the rest, you are free to add and remove functions as you like,
-// just make sure your code is clear, concise and well documented.
 
 _start:
 	bl transform_input
@@ -81,11 +80,21 @@ check_palindrome:
 		ldrb r4, [r5, r2]
 		sub r2, r2, #1
 		
+		cmp r3, #'#'
+		beq continue_chceck_palindrome_loop
+		cmp r3, #'?'
+		beq continue_chceck_palindrome_loop
+		cmp r4, #'#'
+		beq continue_chceck_palindrome_loop
+		cmp r4, #'?'
+		beq continue_chceck_palindrome_loop
+		
 		cmp r3, r4
 		bne end_check_not_palindrome // returns 0 if chars differ
 		
-		cmp r1, r2
-		bgt check_done // ends after crossing middle of string
+		continue_chceck_palindrome_loop:
+			cmp r1, r2
+			bgt check_done // ends after crossing middle of string
 		
 		b check_palindrome_loop
 		
@@ -100,11 +109,11 @@ check_palindrome:
 is_palindrome:
 	push {lr}
 	
-	// Switch on only the 5 rightmost LEDs
+	// switch on 5 rightmost LEDs
 	mov r0, #0x0000001f
 	bl write_led
 	
-	// Write 'Palindrome detected' to UART
+	// print 'Palindrome detected'
 	ldr r0, =detected_message
 	bl print_string
 	
@@ -114,11 +123,11 @@ is_palindrome:
 is_not_palindrome:
 	push {lr}
 	
-	// Switch on only the 5 leftmost LEDs
+	// switch 5 leftmost LEDs
 	mov r0, #0x000003e0
 	bl write_led
 	
-	// Write 'Not a palindrome' to UART
+	// print 'Not a palindrome'
 	ldr r0, =not_detected_message
 	bl print_string
 	
@@ -136,14 +145,17 @@ print_string: // address of string in r0
 	mov r4, r0
 	print_loop:
 	ldrb r0, [r4], #1
-	cmp r0, #0          // sprawdź, czy to null (koniec stringa)
-	beq string_printed  // jeśli tak -> koniec
-	bl PUT_JTAG         // wypisz znak
-	b print_loop        // pętla dalej
+	cmp r0, #0          // chceck if null - end of string
+	beq string_printed  // if yes -> end
+	bl PUT_JTAG         // print sign
+	b print_loop
 
 	string_printed:
 	pop {r4, lr}
 	bx lr
+
+
+// function copied from lectures, puts single char into JTAG UART
 
 PUT_JTAG: // input param char in R0, assumes call by BL
 	LDR R1, =0xFF201000 // JTAG UART base address, assigned to R1
@@ -156,18 +168,15 @@ PUT_JTAG: // input param char in R0, assumes call by BL
 	
 	
 _exit:
-	// Branch here for exit
 	b .
 	
 .data
 .align
-	// This is the input you are supposed to check for a palindrom
-	// You can modify the string during development, however you
-	// are not allowed to change the name 'input'!
-	test: .asciz "Test123"
-	input: .asciz "Grav ned den varg"
+	input: .asciz "0kobyla ma ma#y bok0" //put string to check here
+	//input: .asciz "Grav ned den varg"
 	//input: .asciz "AdAM pZZZac     ek"
-	input_no_spaces: .zero 64
+	
+	input_no_spaces: .zero 128 //max length excluding spaces no longer than 128
 	detected_message: .asciz "Palindrome detected\n"
 	not_detected_message: .asciz "Not a palindrome\n"
 .end
