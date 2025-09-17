@@ -11,6 +11,9 @@ _start:
 	bl transform_input
 	mov r4, r0 // =input_no_spaces length stored in r4
 	
+	bl check_palindrome
+	
+	
 	ldr r0, =input
 	bl print_string
 	ldr r0, =input_no_spaces
@@ -36,6 +39,14 @@ transform_input:
 		cmp r3, #' '
 		beq transform_loop  //if space, don't copy to buffer
 		
+		cmp r3, #'A'
+		blt copy_char
+		cmp r3, #'Z'
+		bgt copy_char
+		
+		add r3, r3, #32 // transform uppercase into lowercase
+		
+		copy_char:
 		strb r3, [r2], #1 //copy char to buffer
 		add r0, r0, #1 // increase real length
 		b transform_loop
@@ -45,7 +56,11 @@ transform_input:
 	
 	
 check_palindrome:
-	// Here you could check whether input is a palindrom or not
+	mov r1, r0 // string length into r1
+	mov r0, #1 // bollean, when returned -> 1 if palindrome detected, 0 if not
+	
+	check_palindrome_loop:
+		// ldrb r2, [r1, 1] ładuje do r2 znak spod r1[1], indeks od 0
 	
 	
 is_palindrome:
@@ -117,6 +132,7 @@ _exit:
 	// are not allowed to change the name 'input'!
 	test: .asciz "Test123"
 	input: .asciz "Grav ned den varg"
+	//input: .asciz "AdAM pZZZac     ek"
 	input_no_spaces: .zero 64
 	detected_message: .asciz "Palindrome detected\n"
 	not_detected_message: .asciz "Not a palindrome\n"
